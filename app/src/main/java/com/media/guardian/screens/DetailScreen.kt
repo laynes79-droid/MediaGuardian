@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -141,9 +142,17 @@ fun DetailScreen(
                 FlowRow(modifier = Modifier.fillMaxWidth()) {
                     tags?.tags?.forEach { tag ->
                         SuggestionChip(
-                            onClick = { /* Maybe remove tag? */ },
+                            onClick = { /* This chip is for display, removal is via the icon */ },
                             label = { Text(tag.name) },
-                            modifier = Modifier.padding(end = 8.dp)
+                            modifier = Modifier.padding(end = 8.dp),
+                            icon = {
+                                IconButton(
+                                    onClick = { viewModel.removeTagFromMediaItem(mediaItemId, tag.name) },
+                                    modifier = Modifier.size(18.dp)
+                                ) {
+                                    Icon(Icons.Default.Close, contentDescription = "Remove tag")
+                                }
+                            }
                         )
                     }
                 }

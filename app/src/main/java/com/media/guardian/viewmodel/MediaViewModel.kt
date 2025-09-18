@@ -67,6 +67,7 @@ class MediaViewModel(private val repository: MediaRepository) : ViewModel() {
     val selectedIds = _selectedIds.asStateFlow()
 
     val isSelectionModeActive = _selectedIds.map { it.isNotEmpty() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     private val _deleteRequest = MutableSharedFlow<IntentSenderRequest>()
     val deleteRequest = _deleteRequest.asSharedFlow()
@@ -110,6 +111,12 @@ class MediaViewModel(private val repository: MediaRepository) : ViewModel() {
         }
     }
 
+    fun removeTagFromMediaItem(mediaItemId: Long, tagName: String) {
+        viewModelScope.launch {
+            repository.removeTagFromMediaItem(mediaItemId, tagName)
+        }
+    }
+
     private fun applyFilterAndSort(list: List<MediaItem>, query: String, sort: SortOption): List<MediaItem> {
         val filteredList = if (query.isBlank()) {
             list
@@ -146,11 +153,14 @@ class MediaViewModel(private val repository: MediaRepository) : ViewModel() {
             }
 
             if (urisToDelete.isNotEmpty()) {
-                val pendingIntent = MediaStore.createDeleteRequest(
-                    repository.context.contentResolver,
-                    urisToDelete
-                )
-                _deleteRequest.emit(IntentSenderRequest.Builder(pendingIntent).build())
+                val pendingIntent = repository.deleteFiles(urisToDelete)
+                if (pendingIntent != null) {
+                    _deleteRequest.emit(IntentSenderRequest.Builder(pendingIntent).build())
+                } else {
+                    // Deletion was handled directly on older API, just refresh
+                    loadMedia(selectedTag.value)
+                    clearSelection()
+                }
             }
         }
     }

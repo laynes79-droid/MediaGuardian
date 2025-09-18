@@ -16,9 +16,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.media.guardian.R
 import com.media.guardian.data.MediaItem
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -32,6 +36,12 @@ fun MediaListItem(
     onLongClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val placeholder = if (mediaItem.mimeType.startsWith("audio/")) {
+        painterResource(id = R.drawable.ic_music_note)
+    } else {
+        null
+    }
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -40,7 +50,12 @@ fun MediaListItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
-            model = mediaItem.uri,
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(mediaItem.uri)
+                .crossfade(true)
+                .build(),
+            placeholder = placeholder,
+            error = placeholder,
             contentDescription = mediaItem.displayName,
             modifier = Modifier.size(64.dp),
             contentScale = ContentScale.Crop

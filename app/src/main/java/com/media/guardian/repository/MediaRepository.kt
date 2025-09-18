@@ -152,4 +152,35 @@ class MediaRepository(
     }
 
     fun getMediaItemsWithTag(tagName: String) = tagDao.getMediaItemsWithTag(tagName)
+
+    suspend fun removeTagFromMediaItem(mediaItemId: Long, tagName: String) {
+        withContext(Dispatchers.IO) {
+            tagDao.deleteMediaItemTagCrossRef(
+                MediaItemTagCrossRef(mediaItemId = mediaItemId, tagName = tagName)
+            )
+        }
+    }
+
+    suspend fun deleteFiles(uris: List<android.net.Uri>): android.app.PendingIntent? {
+        return withContext(Dispatchers.IO) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                MediaStore.createDeleteRequest(context.contentResolver, uris)
+            } else {
+                // For older versions, delete directly
+                // This requires WRITE_EXTERNAL_STORAGE permission for API < 29
+                var filesDeleted = 0
+                for (uri in uris) {
+                    try {
+                        val rowsDeleted = context.contentResolver.delete(uri, null, null)
+                        if (rowsDeleted > 0) {
+                            filesDeleted++
+                        }
+                    } catch (e: Exception) {
+                        // Handle exceptions, e.g., SecurityException
+                    }
+                }
+                null // Indicate that deletion was handled directly
+            }
+        }
+    }
 }

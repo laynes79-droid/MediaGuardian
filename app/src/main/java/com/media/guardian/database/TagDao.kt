@@ -1,6 +1,7 @@
 package com.media.guardian.database
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -16,6 +17,9 @@ interface TagDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertMediaItemTagCrossRef(crossRef: MediaItemTagCrossRef)
+
+    @Delete
+    suspend fun deleteMediaItemTagCrossRef(crossRef: MediaItemTagCrossRef)
 
     @Transaction
     @Query("SELECT * FROM Tag")

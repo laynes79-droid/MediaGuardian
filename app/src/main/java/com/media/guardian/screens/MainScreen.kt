@@ -1,5 +1,7 @@
 package com.media.guardian.screens
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -8,6 +10,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.ViewList
 import androidx.compose.material3.DropdownMenu
@@ -38,7 +41,7 @@ import com.media.guardian.ui.composables.DrawerContent
 import com.media.guardian.viewmodel.MediaViewModel
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun MainScreen(
     viewModel: MediaViewModel,
@@ -72,52 +75,58 @@ fun MainScreen(
     ) {
         Scaffold(
             topBar = {
-                if (isSelectionModeActive) {
-                    ContextualTopAppBar(
-                        selectionCount = selectedIds.size,
-                        onClose = { viewModel.clearSelection() },
-                        onDelete = { viewModel.deleteSelectedFiles() }
-                    )
-                } else {
-                    TopAppBar(
-                        title = { Text("Media Guardian") },
-                        navigationIcon = {
-                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                                Icon(Icons.Default.Menu, contentDescription = "Open menu")
-                            }
-                        },
-                        actions = {
-                            IconButton(onClick = { showViewModeMenu = true }) {
-                                Icon(Icons.Default.ViewList, contentDescription = "Change view mode")
-                            }
-                            DropdownMenu(
-                                expanded = showViewModeMenu,
-                                onDismissRequest = { showViewModeMenu = false }
-                            ) {
-                                DropdownMenuItem(
-                                    text = { Text("Normal Grid") },
-                                    onClick = {
-                                        viewModel.onViewModeChanged(ViewMode.GRID_NORMAL)
-                                        showViewModeMenu = false
+                AnimatedContent(targetState = isSelectionModeActive, label = "TopAppBar Animation") { inSelectionMode ->
+                    if (inSelectionMode) {
+                        ContextualTopAppBar(
+                            selectionCount = selectedIds.size,
+                            onClose = { viewModel.clearSelection() },
+                            onDelete = { viewModel.deleteSelectedFiles() }
+                        )
+                    } else {
+                        TopAppBar(
+                            title = { Text("Media Guardian") },
+                            navigationIcon = {
+                                IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                                    Icon(Icons.Default.Menu, contentDescription = "Open menu")
+                                }
+                            },
+                            actions = {
+                                IconButton(onClick = { showViewModeMenu = true }) {
+                                    val icon = when (viewMode) {
+                                        ViewMode.GRID_NORMAL, ViewMode.GRID_LARGE -> Icons.Default.ViewList
+                                        ViewMode.LIST_DETAILS -> Icons.Default.GridView
                                     }
-                                )
-                                DropdownMenuItem(
-                                    text = { Text("Large Grid") },
-                                    onClick = {
-                                        viewModel.onViewModeChanged(ViewMode.GRID_LARGE)
-                                        showViewModeMenu = false
-                                    }
-                                )
-                                DropdownMenuItem(
-                                    text = { Text("Details List") },
-                                    onClick = {
-                                        viewModel.onViewModeChanged(ViewMode.LIST_DETAILS)
-                                        showViewModeMenu = false
-                                    }
-                                )
+                                    Icon(icon, contentDescription = "Change view mode")
+                                }
+                                DropdownMenu(
+                                    expanded = showViewModeMenu,
+                                    onDismissRequest = { showViewModeMenu = false }
+                                ) {
+                                    DropdownMenuItem(
+                                        text = { Text("Normal Grid") },
+                                        onClick = {
+                                            viewModel.onViewModeChanged(ViewMode.GRID_NORMAL)
+                                            showViewModeMenu = false
+                                        }
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text("Large Grid") },
+                                        onClick = {
+                                            viewModel.onViewModeChanged(ViewMode.GRID_LARGE)
+                                            showViewModeMenu = false
+                                        }
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text("Details List") },
+                                        onClick = {
+                                            viewModel.onViewModeChanged(ViewMode.LIST_DETAILS)
+                                            showViewModeMenu = false
+                                        }
+                                    )
+                                }
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         ) { paddingValues ->
