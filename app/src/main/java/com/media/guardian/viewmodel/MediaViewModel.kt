@@ -80,7 +80,7 @@ class MediaViewModel(private val repository: MediaRepository) : ViewModel() {
         }.launchIn(viewModelScope)
     }
 
-    private fun loadMedia(tag: String? = null) {
+    fun loadMedia(tag: String? = null) {
         viewModelScope.launch {
             _allImages.value = repository.getImages(tag)
             _allVideos.value = repository.getVideos(tag)
