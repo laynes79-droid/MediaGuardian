@@ -30,7 +30,7 @@ interface TagDao {
     fun getTagsForMediaItem(mediaItemId: Long): Flow<MediaItemWithTags>
 
     @Transaction
-    @Query("SELECT * FROM Tag WHERE name = :tagName")
+    @Query("SELECT * FROM MediaItem WHERE id IN (SELECT mediaItemId FROM MediaItemTagCrossRef WHERE tagName = :tagName)")
     fun getMediaItemsWithTag(tagName: String): Flow<List<MediaItemWithTags>>
 
     @Query("SELECT mediaItemId FROM MediaItemTagCrossRef WHERE tagName = :tagName")
