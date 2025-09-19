@@ -10,7 +10,11 @@ data class MediaItemWithTags(
     @Relation(
         parentColumn = "id",
         entityColumn = "name",
-        associateBy = Junction(MediaItemTagCrossRef::class)
+        associateBy = Junction(
+            value = MediaItemTagCrossRef::class,
+            parentColumn = "mediaItemId",
+            entityColumn = "tagName"
+        )
     )
     val tags: List<Tag>
 )
