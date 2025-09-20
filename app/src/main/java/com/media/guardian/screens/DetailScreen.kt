@@ -44,6 +44,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.media.guardian.ui.composables.VideoPlayer
 import com.media.guardian.viewmodel.MediaViewModel
+import kotlin.math.pow
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -208,7 +209,7 @@ private fun formatFileSize(sizeInBytes: Long): String {
     if (sizeInBytes <= 0) return "0 B"
     val units = arrayOf("B", "KB", "MB", "GB", "TB")
     val digitGroups = (kotlin.math.log10(sizeInBytes.toDouble()) / kotlin.math.log10(1024.0)).toInt()
-    return String.format(java.util.Locale.US, "%.1f %s", sizeInBytes / kotlin.math.pow(1024.0, digitGroups.toDouble()), units[digitGroups])
+    return String.format(java.util.Locale.US, "%.1f %s", sizeInBytes / 1024.0.pow(digitGroups), units[digitGroups])
 }
 
 private fun formatTimestamp(timestamp: Long): String {
