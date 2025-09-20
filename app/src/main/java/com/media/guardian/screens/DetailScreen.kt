@@ -147,9 +147,13 @@ fun DetailScreen(
             Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                 Text(
                     text = "Size: ${formatFileSize(mediaItem.size)}",
-                    style = androidx.compose.material3.MaterialTheme.typography.bodyLarge
+                    style = androidx.compose.material3.MaterialTheme.typography.bodyMedium
                 )
-                // Add more details here if needed in the future
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Added: ${formatTimestamp(mediaItem.dateAdded)}",
+                    style = androidx.compose.material3.MaterialTheme.typography.bodyMedium
+                )
             }
 
 
@@ -204,5 +208,12 @@ private fun formatFileSize(sizeInBytes: Long): String {
     if (sizeInBytes <= 0) return "0 B"
     val units = arrayOf("B", "KB", "MB", "GB", "TB")
     val digitGroups = (kotlin.math.log10(sizeInBytes.toDouble()) / kotlin.math.log10(1024.0)).toInt()
-    return String.format("%.1f %s", sizeInBytes / kotlin.math.pow(1024.0, digitGroups.toDouble()), units[digitGroups])
+    return String.format(java.util.Locale.US, "%.1f %s", sizeInBytes / kotlin.math.pow(1024.0, digitGroups.toDouble()), units[digitGroups])
+}
+
+private fun formatTimestamp(timestamp: Long): String {
+    // MediaStore timestamps are in seconds, Date requires milliseconds
+    val date = java.util.Date(timestamp * 1000)
+    val format = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault())
+    return format.format(date)
 }
