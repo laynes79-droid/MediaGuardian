@@ -73,12 +73,6 @@ fun DetailScreen(
 
     val tags by viewModel.getTagsForMediaItem(mediaItemId).collectAsState(initial = null)
 
-    val openWithIntent = Intent(Intent.ACTION_VIEW).apply {
-        setDataAndType(mediaItem.uri, mediaItem.mimeType)
-        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-    }
-    val chooserIntent = Intent.createChooser(openWithIntent, "Open with")
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -96,8 +90,21 @@ fun DetailScreen(
                         DropdownMenuItem(
                             text = { Text("Open with...") },
                             onClick = {
-                                context.startActivity(chooserIntent)
                                 showMenu = false
+                                val intent = Intent(Intent.ACTION_VIEW).apply {
+                                    setDataAndType(mediaItem.uri, mediaItem.mimeType)
+                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                }
+                                try {
+                                    val chooser = Intent.createChooser(intent, "Open with...")
+                                    context.startActivity(chooser)
+                                } catch (e: Exception) {
+                                    Toast.makeText(
+                                        context,
+                                        "No application found to open this file.",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
                             }
                         )
                         DropdownMenuItem(
@@ -136,8 +143,22 @@ fun DetailScreen(
                 }
             }
 
+            // Details Section
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                Text(
+                    text = "Size: ${formatFileSize(mediaItem.size)}",
+                    style = androidx.compose.material3.MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Added: ${formatTimestamp(mediaItem.dateAdded)}",
+                    style = androidx.compose.material3.MaterialTheme.typography.bodyMedium
+                )
+            }
+
+
             // Tags section
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                 Text("Tags", style = androidx.compose.material3.MaterialTheme.typography.titleMedium)
                 Spacer(modifier = Modifier.height(8.dp))
                 FlowRow(modifier = Modifier.fillMaxWidth()) {
@@ -181,4 +202,18 @@ fun DetailScreen(
             }
         }
     }
+}
+
+private fun formatFileSize(sizeInBytes: Long): String {
+    if (sizeInBytes <= 0) return "0 B"
+    val units = arrayOf("B", "KB", "MB", "GB", "TB")
+    val digitGroups = (kotlin.math.log10(sizeInBytes.toDouble()) / kotlin.math.log10(1024.0)).toInt()
+    return String.format(java.util.Locale.US, "%.1f %s", sizeInBytes / kotlin.math.pow(1024.0, digitGroups.toDouble()), units[digitGroups])
+}
+
+private fun formatTimestamp(timestamp: Long): String {
+    // MediaStore timestamps are in seconds, Date requires milliseconds
+    val date = java.util.Date(timestamp * 1000)
+    val format = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault())
+    return format.format(date)
 }
