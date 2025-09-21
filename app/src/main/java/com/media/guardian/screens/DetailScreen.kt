@@ -42,6 +42,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.media.guardian.navigation.Screen
 import com.media.guardian.ui.composables.VideoPlayer
 import com.media.guardian.viewmodel.MediaViewModel
 import kotlin.math.pow
@@ -114,6 +115,20 @@ fun DetailScreen(
                                 viewModel.duplicateMedia(mediaItem.uri)
                                 Toast.makeText(context, "Duplicating...", Toast.LENGTH_SHORT).show()
                                 showMenu = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Copy to...") },
+                            onClick = {
+                                showMenu = false
+                                navController.navigate(Screen.FolderPicker.createRoute(mediaItem.id, "copy"))
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Move to...") },
+                            onClick = {
+                                showMenu = false
+                                navController.navigate(Screen.FolderPicker.createRoute(mediaItem.id, "move"))
                             }
                         )
                     }

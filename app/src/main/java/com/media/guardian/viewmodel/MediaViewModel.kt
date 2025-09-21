@@ -50,6 +50,9 @@ class MediaViewModel(private val repository: MediaRepository) : ViewModel() {
 
     val allTags: Flow<List<Tag>> = repository.getAllTags()
 
+    private val _folders = MutableStateFlow<List<String>>(emptyList())
+    val folders = _folders.asStateFlow()
+
     // --- Filtered & Sorted Data for UI ---
     val images = combine(_allImages, _searchQuery.debounce(300), _sortOption) { list, query, sort ->
         applyFilterAndSort(list, query, sort)
@@ -85,6 +88,12 @@ class MediaViewModel(private val repository: MediaRepository) : ViewModel() {
             _allImages.value = repository.getImages(tag)
             _allVideos.value = repository.getVideos(tag)
             _allAudios.value = repository.getAudios(tag)
+        }
+    }
+
+    fun loadFolders() {
+        viewModelScope.launch {
+            _folders.value = repository.getMediaFolders()
         }
     }
 
@@ -170,6 +179,26 @@ class MediaViewModel(private val repository: MediaRepository) : ViewModel() {
         viewModelScope.launch {
             repository.duplicateMedia(uri)
             loadMedia(_selectedTag.value)
+        }
+    }
+
+    fun copyMedia(mediaItem: MediaItem, destinationFolder: String, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val result = repository.copyMedia(mediaItem, destinationFolder)
+            onResult(result)
+            if (result) {
+                loadMedia(selectedTag.value)
+            }
+        }
+    }
+
+    fun moveMedia(mediaItem: MediaItem, destinationFolder: String, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val result = repository.moveMedia(mediaItem, destinationFolder)
+            onResult(result)
+            if (result) {
+                loadMedia(selectedTag.value)
+            }
         }
     }
 
